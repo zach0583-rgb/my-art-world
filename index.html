@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Art World</title>
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+
+<body>
+  <a-scene background="color: #e9d7ff">
+
+    <!-- YOUR PAINTING / BACKGROUND -->
+    <a-plane
+      src="test-bg.png"
+      width="30"
+      height="15"
+      position="0 7 -20"
+      material="transparent: true; alphaTest: 0.5"
+    ></a-plane>
+
+    <!-- YOUR CHARACTER -->
+    <a-plane
+      src="test-char.png"
+      width="2.5"
+      height="3.5"
+      position="0 1.75 -8"
+      material="transparent: true; alphaTest: 0.5"
+      animation="property: position; to: 0 2.2 -8; dir: alternate; dur: 2000; loop: true"
+    ></a-plane>
+
+    <!-- FLOOR -->
+    <a-plane
+      rotation="-90 0 0"
+      width="50"
+      height="50"
+      position="0 0 -10"
+      color="#5b8a60"
+    ></a-plane>
+
+    <!-- YOU / CAMERA -->
+    <a-entity
+      position="0 1.6 5"
+      movement-controls="speed: 0.12"
+    >
+      <a-entity
+        camera
+        look-controls="pointerLockEnabled: false"
+      ></a-entity>
+    </a-entity>
+
+  </a-scene>
+</body>
+</html><!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>My Art World</title>
+
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+
+<body>
+  <a-scene background="color: #e9d7ff">
+
+    <!-- YOUR PAINTING / BACKGROUND -->
+    <a-plane
+      src="test-bg.png"
+      width="30"
+      height="15"
+      position="0 7 -20"
+      material="transparent: true; alphaTest: 0.5"
+    ></a-plane>
+
+    <!-- YOUR CHARACTER -->
+    <a-plane
+      src="test-char.png"
+      width="2.5"
+      height="3.5"
+      position="0 1.75 -8"
+      material="transparent: true; alphaTest: 0.5"
+      animation="property: position; to: 0 2.2 -8; dir: alternate; dur: 2000; loop: true"
+    ></a-plane>
+
+    <!-- FLOOR -->
+    <a-plane
+      rotation="-90 0 0"
+      width="50"
+      height="50"
+      position="0 0 -10"
+      color="#5b8a60"
+    ></a-plane>
+
+    <!-- YOU / CAMERA -->
+    <a-entity
+      position="0 1.6 5"
+      movement-controls="speed: 0.12"
+    >
+      <a-entity
+        camera
+        look-controls="pointerLockEnabled: false"
+      ></a-entity>
+    </a-entity>
+
+  </a-scene>
+</body>
+</html>
