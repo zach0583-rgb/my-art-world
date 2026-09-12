@@ -2,39 +2,83 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>My Art World</title>
-
+  <title>Dark Forest Art World</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
-
   <style>
     body { margin: 0; overflow: hidden; }
   </style>
 </head>
 
 <body>
-  <a-scene background="color: #e9d7ff">
+  <!-- SCENE WITH DARK FOG & ATMOSPHERE -->
+  <a-scene fog="type: exponential; color: #070d12; density: 0.06" background="color: #070d12">
+    
     <a-assets>
-      <img id="bg" src="test-bg.png">
-      <img id="char" src="test-char.png">
+      <img id="test-bg" src="test-bg.png">
+      <img id="test-char" src="test-char.png">
     </a-assets>
 
-    <a-plane
-      src="#bg"
-      width="30"
-      height="15"
-      position="0 7 -20"
-      material="transparent: true; alphaTest: 0.5"
-    ></a-plane>
+    <!-- LIGHTING -->
+    <a-ambient-light color="#223344"></a-ambient-light>
+    <a-directional-light position="-1 4 -3" color="#6688aa" intensity="0.6"></a-directional-light>
 
+    <!-- YOUR PAINTING IN THE DISTANCE -->
     <a-plane
-      src="#char"
-      width="2.5"
-      height="3.5"
-      position="0 1.75 -8"
+      src="#test-bg"
+      width="24" height="12"
+      position="0 6 -18"
+      material="transparent: true; alphaTest: 0.5">
+    </a-plane>
+
+    <!-- YOUR FLOATING CHARACTER -->
+    <a-plane
+      src="#test-char"
+      width="2" height="3"
+      position="0 1.5 -6"
       material="transparent: true; alphaTest: 0.5"
-      animation="property: position; to: 0 2.2 -8; dir: alternate; dur: 2000; loop: true"
-    ></a-plane>
+      animation="property: position; to: 0 1.9 -6; dir: alternate; dur: 2500; loop: true">
+    </a-plane>
+
+    <!-- FOREST PATH (THE FLOOR YOU WALK ON) -->
+    <a-plane
+      rotation="-90 0 0"
+      width="10" height="40"
+      position="0 0.01 -10"
+      color="#181310">
+    </a-plane>
+
+    <!-- DARK FOREST GROUND -->
+    <a-plane
+      rotation="-90 0 0"
+      width="100" height="100"
+      position="0 0 -10"
+      color="#0c140e">
+    </a-plane>
+
+    <!-- PLACEHOLDER FOREST TREES (LEFT SIDE) -->
+    <a-cylinder position="-4 3 -5" radius="0.3" height="6" color="#0b120c"></a-cylinder>
+    <a-cylinder position="-3 3 -10" radius="0.4" height="7" color="#080e09"></a-cylinder>
+    <a-cylinder position="-5 3 -15" radius="0.5" height="8" color="#050a06"></a-cylinder>
+
+    <!-- PLACEHOLDER FOREST TREES (RIGHT SIDE) -->
+    <a-cylinder position="4 3 -4" radius="0.3" height="6" color="#0b120c"></a-cylinder>
+    <a-cylinder position="3 3 -9" radius="0.4" height="7" color="#080e09"></a-cylinder>
+    <a-cylinder position="5 3 -14" radius="0.5" height="8" color="#050a06"></a-cylinder>
+
+    <!-- FLOATING GLOWING ORBS / FIREFLIES -->
+    <a-sphere position="-1.5 1.8 -4" radius="0.08" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
+      animation="property: position; to: -1.2 2.2 -3.8; dir: alternate; dur: 3000; loop: true"></a-sphere>
+    <a-sphere position="1.8 1.2 -7" radius="0.06" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
+      animation="property: position; to: 1.5 1.6 -6.5; dir: alternate; dur: 2200; loop: true"></a-sphere>
+
+    <!-- CAMERA / TOUCH MOVEMENT FOR PHONE & GLASSES -->
+    <a-entity position="0 1.6 2" wasd-controls look-controls="pointerLockEnabled: false">
+      <a-camera></a-camera>
+    </a-entity>
+
+  </a-scene>
+</body>
+</html>    ></a-plane>
 
     <a-plane
       rotation="-90 0 0"
