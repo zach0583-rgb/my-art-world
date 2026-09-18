@@ -1,96 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Dark Forest Art World</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7/dist/aframe-extras.min.js"></script>
+  <link rel="stylesheet" href="ui.css">
 </head>
 
 <body>
-  <!-- SCENE WITH DARK FOG & ATMOSPHERE -->
-  <a-scene fog="type: exponential; color: #070d12; density: 0.06" background="color: #070d12">
-    
-    <a-assets>
+  <!-- ================= 3D WORLD ================= -->
+  <a-scene
+    fog="type: exponential; color: #070d12; density: 0.05"
+    background="color: #070d12"
+    renderer="antialias: true; colorManagement: true; foveationLevel: 1"
+    vr-mode-ui="enabled: true"
+    sbs-glasses
+    world-state>
+
+    <a-assets timeout="10000">
       <img id="test-bg" src="test-bg.png">
       <img id="test-char" src="test-char.png">
     </a-assets>
 
     <!-- LIGHTING -->
-    <a-ambient-light color="#223344"></a-ambient-light>
-    <a-directional-light position="-1 4 -3" color="#6688aa" intensity="0.6"></a-directional-light>
+    <a-entity light="type: ambient; color: #223344"></a-entity>
+    <a-entity light="type: directional; color: #6688aa; intensity: 0.6" position="-1 4 -3"></a-entity>
+    <a-entity light="type: point; color: #ffb070; intensity: 1.2; distance: 9; decay: 2" position="0 2 -6"
+      animation="property: light.intensity; from: 0.9; to: 1.5; dir: alternate; dur: 1800; loop: true; easing: easeInOutSine"></a-entity>
 
-    <!-- YOUR PAINTING IN THE DISTANCE -->
-    <a-plane
+    <!-- YOUR PAINTING IN THE DISTANCE (the sky at the end of the path) -->
+    <a-plane id="painting"
       src="#test-bg"
-      width="24" height="12"
-      position="0 6 -18"
-      material="transparent: true; alphaTest: 0.5">
+      width="24" height="24"
+      position="0 9 -30"
+      material="shader: flat; transparent: true; fog: false">
     </a-plane>
+    <!-- soft glow from the painting -->
+    <a-plane width="30" height="30" position="0 9 -30.2"
+      material="shader: flat; color: #ff7a3c; opacity: 0.18; transparent: true; fog: false"
+      animation="property: material.opacity; from: 0.12; to: 0.25; dir: alternate; dur: 4000; loop: true"></a-plane>
 
-    <!-- YOUR FLOATING CHARACTER -->
-    <a-plane
-      src="#test-char"
-      width="2" height="3"
-      position="0 1.5 -6"
-      material="transparent: true; alphaTest: 0.5"
-      animation="property: position; to: 0 1.9 -6; dir: alternate; dur: 2500; loop: true">
-    </a-plane>
+    <!-- THE GUIDE: your floating painted character (black bg removed with additive blending) -->
+    <a-entity id="guide" position="0 1.7 -6">
+      <a-plane
+        class="clickable"
+        src="#test-char"
+        width="2.2" height="3.9"
+        material="shader: flat; transparent: true; blending: additive; fog: false; side: double"
+        look-at-camera
+        animation="property: position; to: 0 0.35 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine">
+      </a-plane>
+      <!-- glow halo -->
+      <a-sphere class="clickable" radius="1.4" material="shader: flat; color: #ff6ad5; opacity: 0.06; transparent: true; fog: false"
+        animation="property: scale; from: 0.9 0.9 0.9; to: 1.15 1.15 1.15; dir: alternate; dur: 2500; loop: true"></a-sphere>
+      <!-- speech bubble shown in-world (great for glasses) -->
+      <a-entity id="guide-bubble" position="0 2.6 0" look-at-camera visible="false">
+        <a-plane width="3.2" height="1" material="shader: flat; color: #0b1620; opacity: 0.85; transparent: true; fog: false"></a-plane>
+        <a-text id="guide-bubble-text" value="" color="#ffe9c9" align="center" width="3" wrap-count="34" position="0 0 0.01"></a-text>
+      </a-entity>
+    </a-entity>
 
-    <!-- FOREST PATH (THE FLOOR YOU WALK ON) -->
-    <a-plane
-      rotation="-90 0 0"
-      width="10" height="40"
-      position="0 0.01 -10"
-      color="#181310">
-    </a-plane>
-
+    <!-- FOREST PATH -->
+    <a-plane rotation="-90 0 0" width="8" height="60" position="0 0.01 -20" color="#181310" roughness="1"></a-plane>
     <!-- DARK FOREST GROUND -->
-    <a-plane
-      rotation="-90 0 0"
-      width="100" height="100"
-      position="0 0 -10"
-      color="#0c140e">
-    </a-plane>
+    <a-plane rotation="-90 0 0" width="200" height="200" position="0 0 -10" color="#0c140e" roughness="1"></a-plane>
 
-    <!-- PLACEHOLDER FOREST TREES (LEFT SIDE) -->
-    <a-cylinder position="-4 3 -5" radius="0.3" height="6" color="#0b120c"></a-cylinder>
-    <a-cylinder position="-3 3 -10" radius="0.4" height="7" color="#080e09"></a-cylinder>
-    <a-cylinder position="-5 3 -15" radius="0.5" height="8" color="#050a06"></a-cylinder>
+    <!-- FOREST (generated) -->
+    <a-entity forest="count: 90; spread: 45; pathHalfWidth: 5"></a-entity>
 
-    <!-- PLACEHOLDER FOREST TREES (RIGHT SIDE) -->
-    <a-cylinder position="4 3 -4" radius="0.3" height="6" color="#0b120c"></a-cylinder>
-    <a-cylinder position="3 3 -9" radius="0.4" height="7" color="#080e09"></a-cylinder>
-    <a-cylinder position="5 3 -14" radius="0.5" height="8" color="#050a06"></a-cylinder>
+    <!-- FIREFLIES (generated) -->
+    <a-entity fireflies="count: 40; spread: 22"></a-entity>
 
-    <!-- FLOATING GLOWING ORBS / FIREFLIES -->
-    <a-sphere position="-1.5 1.8 -4" radius="0.08" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
-      animation="property: position; to: -1.2 2.2 -3.8; dir: alternate; dur: 3000; loop: true"></a-sphere>
-    <a-sphere position="1.8 1.2 -7" radius="0.06" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
-      animation="property: position; to: 1.5 1.6 -6.5; dir: alternate; dur: 2200; loop: true"></a-sphere>
-
-    <!-- CAMERA / TOUCH MOVEMENT FOR PHONE & GLASSES -->
-    <a-entity position="0 1.6 2" wasd-controls look-controls="pointerLockEnabled: false">
-      <a-camera></a-camera>
-    </a-entity>
-
-  </a-scene>
-</body>
-</html>    ></a-plane>
-
-    <a-plane
-      rotation="-90 0 0"
-      width="50"
-      height="50"
-      position="0 0 -10"
-      color="#5b8a60"
-    ></a-plane>
-
-    <a-entity position="0 1.6 5" movement-controls="speed: 0.12">
-      <a-entity camera look-controls="pointerLockEnabled: false"></a-entity>
+    <!-- PLAYER RIG: keyboard / touch joystick / gamepad / VR controllers -->
+    <a-entity id="rig" position="0 0 3"
+      movement-controls="speed: 0.18; fly: false; constrainToNavMesh: false; controls: keyboard, gamepad"
+      joystick-move>
+      <a-entity id="camera" camera="near: 0.05" position="0 1.6 0" look-controls="pointerLockEnabled: false; touchEnabled: true; magicWindowTrackingEnabled: true">
+        <!-- mouse / tap cursor (desktop & phone) -->
+        <a-entity cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
+        <!-- gaze cursor (VR / glasses mode only) -->
+        <a-entity id="gaze" visible="false" cursor="fuse: true; fuseTimeout: 1200" raycaster="objects: .clickable; enabled: false" position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.014"
+          material="shader: flat; color: #ffe9c9; opacity: 0.8"></a-entity>
+      </a-entity>
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+      <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     </a-entity>
   </a-scene>
+
+  <!-- ================= 2D UI OVERLAY ================= -->
+  <div id="hud">
+    <div id="topbar">
+      <button id="btn-talk" title="Talk to the guide">🎙 Talk</button>
+      <button id="btn-chat" title="Open chat">💬 Chat</button>
+      <button id="btn-glasses" title="Side-by-side 3D for AR glasses">👓 Glasses 3D</button>
+      <button id="btn-settings" title="Settings">⚙</button>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <!-- on-screen joystick (touch devices) -->
+  <div id="joystick"><div id="stick"></div></div>
+
+  <!-- chat panel -->
+  <div id="chat" class="hidden">
+    <div id="chat-log"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Ask the guide anything…" autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <!-- settings panel -->
+  <div id="settings" class="hidden">
+    <h3>AI Guide settings</h3>
+    <label>Ollama server URL
+      <input id="set-url" type="text" placeholder="http://192.168.1.20:11434">
+    </label>
+    <label>Model
+      <input id="set-model" type="text" placeholder="gemma3:4b">
+    </label>
+    <label><input id="set-voice" type="checkbox" checked> Guide speaks out loud</label>
+    <label><input id="set-swap" type="checkbox"> Swap left/right eye (glasses 3D)</label>
+    <div class="row">
+      <button id="set-test" type="button">Test connection</button>
+      <button id="set-close" type="button">Close</button>
+    </div>
+    <p class="hint">
+      Free & local: install <b>Ollama</b> on your desktop, run <code>ollama pull gemma3:4b</code>,
+      then start it with <code>OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=* ollama serve</code>.
+      Open this page from the same Wi-Fi (see README). If no server is reachable the guide still
+      answers with built-in lines.
+    </p>
+  </div>
+
+  <script src="world.js"></script>
+  <script src="guide.js"></script>
 </body>
 </html>
