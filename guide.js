@@ -3,7 +3,7 @@
  * - Ears/voice: the browser's built-in Web Speech API (free, works in Chrome on Android + desktop).
  * - Fallback: if no server can be reached, the guide answers with built-in lines so the world never feels dead.
  */
-(function () {
+function initGuide() {
   const $ = (id) => document.getElementById(id);
   const params = new URLSearchParams(location.search);
 
@@ -18,11 +18,15 @@
     }
   };
 
-  const SYSTEM_PROMPT =
-    'You are the Guide, a luminous painted spirit who lives in a dark, misty forest inside an artist\'s 3D world. ' +
-    'At the end of the forest path floats a huge glowing painting of a sunset in orange, gold, magenta and violet over black water. ' +
-    'Speak warmly, a little mysterious, and keep every answer to one or two short sentences because you are spoken aloud. ' +
-    'You may talk about the art, the forest, the fireflies, or anything the visitor asks.';
+  function systemPrompt() {
+    const W = (window.WORLDS || {})[window.currentWorld] || {};
+    const names = Object.values(window.WORLDS || {}).map(w => w.name).join(', ');
+    return 'You are the Guide, a luminous painted spirit who travels with a visitor through connected 3D worlds inspired by the Pacific Northwest: ' + names + '. ' +
+      'Right now you are both in "' + (W.name || 'the forest') + '" (' + (W.tagline || '') + '). ' +
+      'Neighbouring worlds reachable through glowing portal rings here: ' + Object.values(W.portals || {}).map(k => window.WORLDS[k].name).join(', ') + '. ' +
+      'Speak warmly, a little mysterious, and keep every answer to one or two short sentences because you are spoken aloud. ' +
+      'You may talk about the landscape, moss, trees, water, light, the art, or anything the visitor asks.';
+  }
 
   const FALLBACK = [
     'Welcome, traveller. Follow the path; the painting at its end remembers every sunset it has ever seen.',
@@ -71,7 +75,7 @@
   /* ---------- brain ---------- */
   async function askOllama(text) {
     const base = settings.url.replace(/\/$/, '');
-    const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history.slice(-10), { role: 'user', content: text }];
+    const messages = [{ role: 'system', content: systemPrompt() }, ...history.slice(-10), { role: 'user', content: text }];
     const ctrl = new AbortController();
     const to = setTimeout(() => ctrl.abort(), 45000);
     try {
@@ -99,7 +103,11 @@
       try { reply = await askOllama(text); }
       catch (e) { addLine('sys', 'Could not reach the AI server (' + e.message + '). Using built-in lines. Check ⚙ settings.'); }
     }
-    if (!reply) { reply = FALLBACK[fallbackIdx++ % FALLBACK.length]; }
+    if (!reply) {
+      const W = (window.WORLDS || {})[window.currentWorld];
+      const lines = W && W.guideLine ? [W.guideLine, ...FALLBACK] : FALLBACK;
+      reply = lines[fallbackIdx++ % lines.length];
+    }
     history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
     addLine('guide', reply);
     showBubble(reply);
@@ -130,6 +138,19 @@
 
   // tap / gaze / VR-controller click on the guide → listen (or open chat when no mic)
   document.querySelectorAll('#guide .clickable').forEach(el => el.addEventListener('click', () => listen()));
+  // COD-style "fire" button and gamepad RT → interact (talk to guide if nearby, else open chat)
+  function interact() {
+    const g = document.getElementById('guide').object3D.position, r = document.getElementById('rig').object3D.position;
+    if (Math.hypot(g.x - r.x, g.z - r.z) < 9) listen(); else UI.status('Get closer to the guide, or use 💬 chat.');
+  }
+  document.getElementById('btn-fire').addEventListener('touchstart', (e) => { e.preventDefault(); interact(); }, { passive: false });
+  document.getElementById('btn-fire').addEventListener('mousedown', interact);
+  document.addEventListener('interact', interact);
+  // greet on arrival in each world
+  window.onWorldChange = (id, W) => {
+    history.length = 0;
+    setTimeout(() => { if (W.guideLine) { showBubble(W.guideLine); if (settings.voice) speak(W.guideLine); } }, 1800);
+  };
 
   // settings
   const sUrl = $('set-url'), sModel = $('set-model'), sVoice = $('set-voice'), sSwap = $('set-swap');
@@ -158,11 +179,12 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT') return;
-    if (e.key === 't' || e.key === 'T') listen();
+    if (e.key === 't' || e.key === 'T' || e.key === 'e' || e.key === 'E') interact();
     if (e.key === 'c' || e.key === 'C') $('btn-chat').click();
   });
 
   if (params.get('ollama')) settings.save();
   addLine('sys', settings.url ? 'AI server: ' + settings.url + ' (' + settings.model + ')' : 'No AI server set — guide uses built-in lines. Open ⚙ to connect Ollama.');
-  setTimeout(() => showBubble('Hello, traveller. Tap me and speak.'), 2500);
-})();
+
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGuide); else initGuide();

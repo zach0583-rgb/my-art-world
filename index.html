@@ -2,110 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>Dark Forest Art World</title>
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7/dist/aframe-extras.min.js"></script>
+  <meta name="theme-color" content="#0a1410">
+  <title>My Art World</title>
+  <script src="vendor/aframe.min.js"></script>
+  <script src="worlds.js"></script>
+  <script src="world.js"></script>
+  <script src="guide.js"></script>
   <link rel="stylesheet" href="ui.css">
 </head>
 
 <body>
   <!-- ================= 3D WORLD ================= -->
   <a-scene
-    fog="type: exponential; color: #070d12; density: 0.05"
-    background="color: #070d12"
-    renderer="antialias: true; colorManagement: true; foveationLevel: 1"
-    vr-mode-ui="enabled: true"
+    renderer="antialias: false; colorManagement: true; foveationLevel: 1; toneMapping: ACESFilmic; exposure: 1.0"
+    shadow="type: pcfsoft"
+    vr-mode-ui="enabled: true; enterVRButton: #vr-btn"
+    loading-screen="dotsColor: #cfe9ff; backgroundColor: #0a1410"
+    world-builder
     sbs-glasses
     world-state>
 
-    <a-assets timeout="10000">
-      <img id="test-bg" src="test-bg.png">
-      <img id="test-char" src="test-char.png">
-    </a-assets>
+    <!-- 360° sky dome, swapped per world -->
+    <a-sky id="sky" radius="400" material="shader: flat; fog: false"></a-sky>
 
-    <!-- LIGHTING -->
-    <a-entity light="type: ambient; color: #223344"></a-entity>
-    <a-entity light="type: directional; color: #6688aa; intensity: 0.6" position="-1 4 -3"></a-entity>
-    <a-entity light="type: point; color: #ffb070; intensity: 1.2; distance: 9; decay: 2" position="0 2 -6"
-      animation="property: light.intensity; from: 0.9; to: 1.5; dir: alternate; dur: 1800; loop: true; easing: easeInOutSine"></a-entity>
+    <!-- lights (retuned per world) -->
+    <a-entity id="ambient" light="type: ambient; color: #8899aa; intensity: 0.6"></a-entity>
+    <a-entity id="hemi" light="type: hemisphere; color: #aaccdd; groundColor: #223311; intensity: 0.7"></a-entity>
+    <a-entity id="sun" light="type: directional; color: #ffffff; intensity: 0.8; castShadow: false; shadowMapWidth: 1024; shadowMapHeight: 1024; shadowCameraLeft: -30; shadowCameraRight: 30; shadowCameraTop: 30; shadowCameraBottom: -30; shadowCameraFar: 80" position="3 10 -3"></a-entity>
 
-    <!-- YOUR PAINTING IN THE DISTANCE (the sky at the end of the path) -->
-    <a-plane id="painting"
-      src="#test-bg"
-      width="24" height="24"
-      position="0 9 -30"
-      material="shader: flat; transparent: true; fog: false">
-    </a-plane>
-    <!-- soft glow from the painting -->
-    <a-plane width="30" height="30" position="0 9 -30.2"
-      material="shader: flat; color: #ff7a3c; opacity: 0.18; transparent: true; fog: false"
-      animation="property: material.opacity; from: 0.12; to: 0.25; dir: alternate; dur: 4000; loop: true"></a-plane>
+    <!-- everything world-specific (portals, fireflies) goes here; meshes go into a THREE group -->
+    <a-entity id="world-root"></a-entity>
 
-    <!-- THE GUIDE: your floating painted character (black bg removed with additive blending) -->
-    <a-entity id="guide" position="0 1.7 -6">
-      <a-plane
-        class="clickable"
-        src="#test-char"
-        width="2.2" height="3.9"
+    <!-- THE GUIDE: your painted spirit, present in every world -->
+    <a-entity id="guide" position="3 1.7 -7">
+      <a-plane class="clickable" src="test-char.png" width="2.2" height="3.9"
         material="shader: flat; transparent: true; blending: additive; fog: false; side: double"
         look-at-camera
-        animation="property: position; to: 0 0.35 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine">
-      </a-plane>
-      <!-- glow halo -->
-      <a-sphere class="clickable" radius="1.4" material="shader: flat; color: #ff6ad5; opacity: 0.06; transparent: true; fog: false"
+        animation="property: position; to: 0 0.35 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"></a-plane>
+      <a-sphere class="clickable" radius="1.4" material="shader: flat; color: #ff6ad5; opacity: 0.05; transparent: true; fog: false"
         animation="property: scale; from: 0.9 0.9 0.9; to: 1.15 1.15 1.15; dir: alternate; dur: 2500; loop: true"></a-sphere>
-      <!-- speech bubble shown in-world (great for glasses) -->
+      <a-entity light="type: point; color: #ff9a6a; intensity: 0.9; distance: 8; decay: 2"></a-entity>
       <a-entity id="guide-bubble" position="0 2.6 0" look-at-camera visible="false">
         <a-plane width="3.2" height="1" material="shader: flat; color: #0b1620; opacity: 0.85; transparent: true; fog: false"></a-plane>
         <a-text id="guide-bubble-text" value="" color="#ffe9c9" align="center" width="3" wrap-count="34" position="0 0 0.01"></a-text>
       </a-entity>
     </a-entity>
 
-    <!-- FOREST PATH -->
-    <a-plane rotation="-90 0 0" width="8" height="60" position="0 0.01 -20" color="#181310" roughness="1"></a-plane>
-    <!-- DARK FOREST GROUND -->
-    <a-plane rotation="-90 0 0" width="200" height="200" position="0 0 -10" color="#0c140e" roughness="1"></a-plane>
-
-    <!-- FOREST (generated) -->
-    <a-entity forest="count: 90; spread: 45; pathHalfWidth: 5"></a-entity>
-
-    <!-- FIREFLIES (generated) -->
-    <a-entity fireflies="count: 40; spread: 22"></a-entity>
-
-    <!-- PLAYER RIG: keyboard / touch joystick / gamepad / VR controllers -->
-    <a-entity id="rig" position="0 0 3"
-      movement-controls="speed: 0.18; fly: false; constrainToNavMesh: false; controls: keyboard, gamepad"
-      joystick-move>
-      <a-entity id="camera" camera="near: 0.05" position="0 1.6 0" look-controls="pointerLockEnabled: false; touchEnabled: true; magicWindowTrackingEnabled: true">
-        <!-- mouse / tap cursor (desktop & phone) -->
-        <a-entity cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
-        <!-- gaze cursor (VR / glasses mode only) -->
-        <a-entity id="gaze" visible="false" cursor="fuse: true; fuseTimeout: 1200" raycaster="objects: .clickable; enabled: false" position="0 0 -1"
-          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.014"
-          material="shader: flat; color: #ffe9c9; opacity: 0.8"></a-entity>
+    <!-- PLAYER -->
+    <a-entity id="rig" position="0 0 0" fps-controls>
+      <a-entity id="camera" camera="near: 0.05; far: 900; fov: 78" position="0 1.65 0"
+        look-controls="pointerLockEnabled: false; touchEnabled: false; magicWindowTrackingEnabled: false">
+        <a-entity cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable; far: 30"></a-entity>
+        <a-entity id="gaze" visible="false" cursor="fuse: true; fuseTimeout: 1200" raycaster="objects: .clickable; enabled: false; far: 30" position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.014" material="shader: flat; color: #ffe9c9; opacity: 0.8"></a-entity>
       </a-entity>
       <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
       <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     </a-entity>
   </a-scene>
 
-  <!-- ================= 2D UI OVERLAY ================= -->
+  <!-- ================= HUD ================= -->
+  <div id="fade" class="on"></div>
+
+  <div id="world-banner"><div id="world-name"></div><div id="world-tag"></div></div>
+
   <div id="hud">
     <div id="topbar">
-      <button id="btn-talk" title="Talk to the guide">🎙 Talk</button>
-      <button id="btn-chat" title="Open chat">💬 Chat</button>
-      <button id="btn-glasses" title="Side-by-side 3D for AR glasses">👓 Glasses 3D</button>
+      <button id="btn-map" title="World map (M)"><span class="ic">🗺</span><span class="lb">Map</span></button>
+      <button id="btn-talk" title="Talk to the guide (E)"><span class="ic">🎙</span><span class="lb">Talk</span></button>
+      <button id="btn-chat" title="Chat (C)"><span class="ic">💬</span><span class="lb">Chat</span></button>
+      <button id="btn-glasses" title="Glasses 3D (3)"><span class="ic">👓</span><span class="lb">3D</span></button>
+      <button id="vr-btn" title="VR / WebXR">VR</button>
       <button id="btn-settings" title="Settings">⚙</button>
     </div>
     <div id="status"></div>
+    <div id="crosshair"></div>
   </div>
 
-  <!-- on-screen joystick (touch devices) -->
-  <div id="joystick"><div id="stick"></div></div>
+  <!-- COD-Mobile style touch layout -->
+  <div id="stick-base"><div id="stick-knob"></div></div>
+  <div id="actions">
+    <button id="btn-sprint" class="act" title="Sprint">RUN</button>
+    <button id="btn-jump" class="act" title="Jump">JUMP</button>
+    <button id="btn-fire" class="act big" title="Interact / talk">TALK</button>
+  </div>
+  <button id="exit-sbs">✕ Exit 3D</button>
 
-  <!-- chat panel -->
+  <!-- world map -->
+  <div id="map" class="hidden">
+    <h3>Worlds</h3>
+    <div class="grid">
+      <button data-world="meadow">🌸 Wildflower Meadow</button>
+      <button data-world="craterlake">💠 Crater Rim</button>
+      <button data-world="mistwood">🌫 Mistwood</button>
+      <button data-world="alpinelake">🌄 Alpine Lake</button>
+      <button data-world="mossgrove">🌿 Moss Grove</button>
+      <button data-world="fernbrook">🌊 Fern Brook</button>
+    </div>
+    <p class="hint">Or walk into any glowing ring to travel between neighbouring worlds.</p>
+  </div>
+
+  <!-- chat -->
   <div id="chat" class="hidden">
     <div id="chat-log"></div>
     <form id="chat-form">
@@ -114,30 +113,20 @@
     </form>
   </div>
 
-  <!-- settings panel -->
+  <!-- settings -->
   <div id="settings" class="hidden">
-    <h3>AI Guide settings</h3>
-    <label>Ollama server URL
-      <input id="set-url" type="text" placeholder="http://192.168.1.20:11434">
+    <h3>Settings</h3>
+    <label>Graphics quality
+      <select id="set-quality"><option value="low">Low (phone)</option><option value="medium">Medium</option><option value="high">High (desktop)</option></select>
     </label>
-    <label>Model
-      <input id="set-model" type="text" placeholder="gemma3:4b">
-    </label>
+    <label>Ollama server URL <input id="set-url" type="text" placeholder="http://192.168.1.20:11434"></label>
+    <label>Model <input id="set-model" type="text" placeholder="gemma3:4b"></label>
     <label><input id="set-voice" type="checkbox" checked> Guide speaks out loud</label>
     <label><input id="set-swap" type="checkbox"> Swap left/right eye (glasses 3D)</label>
-    <div class="row">
-      <button id="set-test" type="button">Test connection</button>
-      <button id="set-close" type="button">Close</button>
-    </div>
-    <p class="hint">
-      Free & local: install <b>Ollama</b> on your desktop, run <code>ollama pull gemma3:4b</code>,
-      then start it with <code>OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=* ollama serve</code>.
-      Open this page from the same Wi-Fi (see README). If no server is reachable the guide still
-      answers with built-in lines.
-    </p>
+    <div class="row"><button id="set-test" type="button">Test AI connection</button><button id="set-close" type="button">Close</button></div>
+    <p class="hint">Free & local: install <b>Ollama</b> on your desktop, <code>ollama pull gemma3:4b</code>, run
+      <code>OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=* ollama serve</code>, then enter your PC's IP above.</p>
   </div>
 
-  <script src="world.js"></script>
-  <script src="guide.js"></script>
 </body>
 </html>
