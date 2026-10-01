@@ -1,96 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Dark Forest Art World</title>
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0a1410">
+  <title>My Art World</title>
+  <script src="vendor/aframe.min.js"></script>
+  <script src="worlds.js"></script>
+  <script src="world.js"></script>
+  <script src="guide.js"></script>
+  <link rel="stylesheet" href="ui.css">
 </head>
 
 <body>
-  <!-- SCENE WITH DARK FOG & ATMOSPHERE -->
-  <a-scene fog="type: exponential; color: #070d12; density: 0.06" background="color: #070d12">
-    
-    <a-assets>
-      <img id="test-bg" src="test-bg.png">
-      <img id="test-char" src="test-char.png">
-    </a-assets>
+  <!-- ================= 3D WORLD ================= -->
+  <a-scene
+    renderer="antialias: false; colorManagement: true; foveationLevel: 1; toneMapping: ACESFilmic; exposure: 1.0"
+    shadow="type: pcfsoft"
+    vr-mode-ui="enabled: true; enterVRButton: #vr-btn"
+    loading-screen="dotsColor: #cfe9ff; backgroundColor: #0a1410"
+    world-builder
+    sbs-glasses
+    world-state>
 
-    <!-- LIGHTING -->
-    <a-ambient-light color="#223344"></a-ambient-light>
-    <a-directional-light position="-1 4 -3" color="#6688aa" intensity="0.6"></a-directional-light>
+    <!-- 360° sky dome, swapped per world -->
+    <a-sky id="sky" radius="400" material="shader: flat; fog: false"></a-sky>
 
-    <!-- YOUR PAINTING IN THE DISTANCE -->
-    <a-plane
-      src="#test-bg"
-      width="24" height="12"
-      position="0 6 -18"
-      material="transparent: true; alphaTest: 0.5">
-    </a-plane>
+    <!-- lights (retuned per world) -->
+    <a-entity id="ambient" light="type: ambient; color: #8899aa; intensity: 0.6"></a-entity>
+    <a-entity id="hemi" light="type: hemisphere; color: #aaccdd; groundColor: #223311; intensity: 0.7"></a-entity>
+    <a-entity id="sun" light="type: directional; color: #ffffff; intensity: 0.8; castShadow: false; shadowMapWidth: 1024; shadowMapHeight: 1024; shadowCameraLeft: -30; shadowCameraRight: 30; shadowCameraTop: 30; shadowCameraBottom: -30; shadowCameraFar: 80" position="3 10 -3"></a-entity>
 
-    <!-- YOUR FLOATING CHARACTER -->
-    <a-plane
-      src="#test-char"
-      width="2" height="3"
-      position="0 1.5 -6"
-      material="transparent: true; alphaTest: 0.5"
-      animation="property: position; to: 0 1.9 -6; dir: alternate; dur: 2500; loop: true">
-    </a-plane>
+    <!-- everything world-specific (portals, fireflies) goes here; meshes go into a THREE group -->
+    <a-entity id="world-root"></a-entity>
 
-    <!-- FOREST PATH (THE FLOOR YOU WALK ON) -->
-    <a-plane
-      rotation="-90 0 0"
-      width="10" height="40"
-      position="0 0.01 -10"
-      color="#181310">
-    </a-plane>
-
-    <!-- DARK FOREST GROUND -->
-    <a-plane
-      rotation="-90 0 0"
-      width="100" height="100"
-      position="0 0 -10"
-      color="#0c140e">
-    </a-plane>
-
-    <!-- PLACEHOLDER FOREST TREES (LEFT SIDE) -->
-    <a-cylinder position="-4 3 -5" radius="0.3" height="6" color="#0b120c"></a-cylinder>
-    <a-cylinder position="-3 3 -10" radius="0.4" height="7" color="#080e09"></a-cylinder>
-    <a-cylinder position="-5 3 -15" radius="0.5" height="8" color="#050a06"></a-cylinder>
-
-    <!-- PLACEHOLDER FOREST TREES (RIGHT SIDE) -->
-    <a-cylinder position="4 3 -4" radius="0.3" height="6" color="#0b120c"></a-cylinder>
-    <a-cylinder position="3 3 -9" radius="0.4" height="7" color="#080e09"></a-cylinder>
-    <a-cylinder position="5 3 -14" radius="0.5" height="8" color="#050a06"></a-cylinder>
-
-    <!-- FLOATING GLOWING ORBS / FIREFLIES -->
-    <a-sphere position="-1.5 1.8 -4" radius="0.08" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
-      animation="property: position; to: -1.2 2.2 -3.8; dir: alternate; dur: 3000; loop: true"></a-sphere>
-    <a-sphere position="1.8 1.2 -7" radius="0.06" color="#77ffaa" material="emissive: #77ffaa; emissiveIntensity: 0.8"
-      animation="property: position; to: 1.5 1.6 -6.5; dir: alternate; dur: 2200; loop: true"></a-sphere>
-
-    <!-- CAMERA / TOUCH MOVEMENT FOR PHONE & GLASSES -->
-    <a-entity position="0 1.6 2" wasd-controls look-controls="pointerLockEnabled: false">
-      <a-camera></a-camera>
+    <!-- THE GUIDE: your painted spirit, present in every world -->
+    <a-entity id="guide" position="3 1.7 -7">
+      <a-plane class="clickable" src="test-char.png" width="2.2" height="3.9"
+        material="shader: flat; transparent: true; blending: additive; fog: false; side: double"
+        look-at-camera
+        animation="property: position; to: 0 0.35 0; dir: alternate; dur: 2500; loop: true; easing: easeInOutSine"></a-plane>
+      <a-sphere class="clickable" radius="1.4" material="shader: flat; color: #ff6ad5; opacity: 0.05; transparent: true; fog: false"
+        animation="property: scale; from: 0.9 0.9 0.9; to: 1.15 1.15 1.15; dir: alternate; dur: 2500; loop: true"></a-sphere>
+      <a-entity light="type: point; color: #ff9a6a; intensity: 0.9; distance: 8; decay: 2"></a-entity>
+      <a-entity id="guide-bubble" position="0 2.6 0" look-at-camera visible="false">
+        <a-plane width="3.2" height="1" material="shader: flat; color: #0b1620; opacity: 0.85; transparent: true; fog: false"></a-plane>
+        <a-text id="guide-bubble-text" value="" color="#ffe9c9" align="center" width="3" wrap-count="34" position="0 0 0.01"></a-text>
+      </a-entity>
     </a-entity>
 
-  </a-scene>
-</body>
-</html>    ></a-plane>
-
-    <a-plane
-      rotation="-90 0 0"
-      width="50"
-      height="50"
-      position="0 0 -10"
-      color="#5b8a60"
-    ></a-plane>
-
-    <a-entity position="0 1.6 5" movement-controls="speed: 0.12">
-      <a-entity camera look-controls="pointerLockEnabled: false"></a-entity>
+    <!-- PLAYER -->
+    <a-entity id="rig" position="0 0 0" fps-controls>
+      <a-entity id="camera" camera="near: 0.05; far: 900; fov: 78" position="0 1.65 0"
+        look-controls="pointerLockEnabled: false; touchEnabled: false; magicWindowTrackingEnabled: false">
+        <a-entity cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable; far: 30"></a-entity>
+        <a-entity id="gaze" visible="false" cursor="fuse: true; fuseTimeout: 1200" raycaster="objects: .clickable; enabled: false; far: 30" position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.014" material="shader: flat; color: #ffe9c9; opacity: 0.8"></a-entity>
+      </a-entity>
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+      <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
     </a-entity>
   </a-scene>
+
+  <!-- ================= HUD ================= -->
+  <div id="fade" class="on"></div>
+
+  <div id="world-banner"><div id="world-name"></div><div id="world-tag"></div></div>
+
+  <div id="hud">
+    <div id="topbar">
+      <button id="btn-map" title="World map (M)"><span class="ic">🗺</span><span class="lb">Map</span></button>
+      <button id="btn-talk" title="Talk to the guide (E)"><span class="ic">🎙</span><span class="lb">Talk</span></button>
+      <button id="btn-chat" title="Chat (C)"><span class="ic">💬</span><span class="lb">Chat</span></button>
+      <button id="btn-glasses" title="Glasses 3D (3)"><span class="ic">👓</span><span class="lb">3D</span></button>
+      <button id="vr-btn" title="VR / WebXR">VR</button>
+      <button id="btn-settings" title="Settings">⚙</button>
+    </div>
+    <div id="status"></div>
+    <div id="crosshair"></div>
+  </div>
+
+  <!-- COD-Mobile style touch layout -->
+  <div id="stick-base"><div id="stick-knob"></div></div>
+  <div id="actions">
+    <button id="btn-sprint" class="act" title="Sprint">RUN</button>
+    <button id="btn-jump" class="act" title="Jump">JUMP</button>
+    <button id="btn-fire" class="act big" title="Interact / talk">TALK</button>
+  </div>
+  <button id="exit-sbs">✕ Exit 3D</button>
+
+  <!-- world map -->
+  <div id="map" class="hidden">
+    <h3>Worlds</h3>
+    <div class="grid">
+      <button data-world="meadow">🌸 Wildflower Meadow</button>
+      <button data-world="craterlake">💠 Crater Rim</button>
+      <button data-world="mistwood">🌫 Mistwood</button>
+      <button data-world="alpinelake">🌄 Alpine Lake</button>
+      <button data-world="mossgrove">🌿 Moss Grove</button>
+      <button data-world="fernbrook">🌊 Fern Brook</button>
+    </div>
+    <p class="hint">Or walk into any glowing ring to travel between neighbouring worlds.</p>
+  </div>
+
+  <!-- chat -->
+  <div id="chat" class="hidden">
+    <div id="chat-log"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" placeholder="Ask the guide anything…" autocomplete="off">
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <!-- settings -->
+  <div id="settings" class="hidden">
+    <h3>Settings</h3>
+    <label>Graphics quality
+      <select id="set-quality"><option value="low">Low (phone)</option><option value="medium">Medium</option><option value="high">High (desktop)</option></select>
+    </label>
+    <label>Ollama server URL <input id="set-url" type="text" placeholder="http://192.168.1.20:11434"></label>
+    <label>Model <input id="set-model" type="text" placeholder="gemma3:4b"></label>
+    <label><input id="set-voice" type="checkbox" checked> Guide speaks out loud</label>
+    <label><input id="set-swap" type="checkbox"> Swap left/right eye (glasses 3D)</label>
+    <div class="row"><button id="set-test" type="button">Test AI connection</button><button id="set-close" type="button">Close</button></div>
+    <p class="hint">Free & local: install <b>Ollama</b> on your desktop, <code>ollama pull gemma3:4b</code>, run
+      <code>OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS=* ollama serve</code>, then enter your PC's IP above.</p>
+  </div>
+
 </body>
 </html>
